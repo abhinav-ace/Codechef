@@ -1,0 +1,112 @@
+
+
+
+
+
+'''
+https://www.codechef.com/NOV20B/problems/SCALSUM
+
+LINK TO THE QUESTION
+''
+
+
+
+
+
+from collections import defaultdict
+from collections import deque
+
+class Node():
+    def __init__(self,index=None,weight=None,parent=None):
+        self.index=index
+        self.weight=weight
+        self.left=None
+        self.right=None
+        self.parent=parent
+        
+'''def pri(dic):
+    for key,value in dic.items():
+        print("key",key,end=" ")
+        print("weight",value.weight,end=" ")
+        if value.left!=None:
+            print('left',value.left.index,end=" ")
+        if value.right!=None:
+            print('right',value.right.index,end=" ")
+        if value.parent!=None:
+            print('parent',value.parent.index,end=" ")
+            
+        print()'''
+
+#n is the no of nodes q is the number of queries.
+n,q=map(int,input().split())
+w=list(map(int,input().split()))
+
+#dic holds all the nodes with key as node index
+dic={}
+for i in range(1,n+1):
+    dic[i]=Node(index=i,weight=w[i-1])
+
+#dic2 holds all the node indexes that key is connected to
+dic2=defaultdict(list)
+for i in range(n-1):
+    u,v=map(int,input().split())
+    dic2[u].append(v)
+    dic2[v].append(u)
+
+#Removing duplicates
+for key,value in dic2.items():
+    dic2[key]=list(set(value))
+#print(dic2)
+
+#Starting BFS with 1
+que=deque([1])
+while que:
+    val=que.popleft()
+    
+    if dic[val].parent!=None:
+        dic2[val].remove(dic[val].parent.index)
+    #print(val,dic2)
+    
+    if len(dic2[val])==0:
+        None
+        
+    elif len(dic2[val])==1:
+        lef=dic2[val][0]
+        dic[val].left=dic[lef]
+        dic[lef].parent=dic[val]
+        que.append(lef)
+        
+    elif len(dic2[val])==2:
+        lef=dic2[val][0]
+        dic[val].left=dic[lef]
+        dic[lef].parent=dic[val]
+        que.append(lef)
+        
+        rig=dic2[val][1]
+        dic[val].right=dic[rig]
+        dic[rig].parent=dic[val]
+        que.append(rig)
+    #print(que)
+#pri(dic)
+for i in range(q):
+    u,v=map(int,input().split())
+    uval=[]
+    vval=[]
+    
+    curr=dic[u]
+    while curr.index!=1:
+        uval.append(curr.weight)
+        curr=curr.parent
+    uval.append(curr.weight)
+        
+    curr=dic[v]
+    while curr.index!=1:
+        vval.append(curr.weight)
+        curr=curr.parent
+    vval.append(curr.weight)
+    #print(uval,vval)
+    
+    ans=0
+    for i in range(len(uval)):
+        ans+=(uval[i]*vval[i])%(2**32)
+    print(ans%(2**32))
