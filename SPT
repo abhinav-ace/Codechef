@@ -1,8 +1,5 @@
 
 
-
-
-
 '''
 https://www.codechef.com/NOV20B/problems/SCALSUM
 
@@ -20,24 +17,21 @@ class Node():
     def __init__(self,index=None,weight=None,parent=None):
         self.index=index
         self.weight=weight
-        self.left=None
-        self.right=None
+        self.child=[]
         self.parent=parent
+        self.f=[]
         
-'''def pri(dic):
+def pri(dic):
     for key,value in dic.items():
         print("key",key,end=" ")
-        print("weight",value.weight,end=" ")
-        if value.left!=None:
-            print('left',value.left.index,end=" ")
-        if value.right!=None:
-            print('right',value.right.index,end=" ")
-        if value.parent!=None:
-            print('parent',value.parent.index,end=" ")
-            
-        print()'''
+        print("weight",value.weight)
+        for i in value.child:
+            print(i.index)
+            print("parent",i.parent.index)
+        print(value.f)
+        print()
 
-#n is the no of nodes q is the number of queries.
+#n is the no of nodes and q is the no of queries.
 n,q=map(int,input().split())
 w=list(map(int,input().split()))
 
@@ -46,67 +40,51 @@ dic={}
 for i in range(1,n+1):
     dic[i]=Node(index=i,weight=w[i-1])
 
-#dic2 holds all the node indexes that key is connected to
+#dic2 holds all the node indexes that key is connected to.
 dic2=defaultdict(list)
 for i in range(n-1):
     u,v=map(int,input().split())
     dic2[u].append(v)
     dic2[v].append(u)
 
-#Removing duplicates
-for key,value in dic2.items():
-    dic2[key]=list(set(value))
-#print(dic2)
-
 #Starting BFS with 1
 que=deque([1])
+done=set([1])
+dic[1].f=[dic[1].weight]
 while que:
-    val=que.popleft()
     
-    if dic[val].parent!=None:
-        dic2[val].remove(dic[val].parent.index)
-    #print(val,dic2)
+    parent=que.popleft()
+    #print(parent,dic2)
     
-    if len(dic2[val])==0:
-        None
-        
-    elif len(dic2[val])==1:
-        lef=dic2[val][0]
-        dic[val].left=dic[lef]
-        dic[lef].parent=dic[val]
-        que.append(lef)
-        
-    elif len(dic2[val])==2:
-        lef=dic2[val][0]
-        dic[val].left=dic[lef]
-        dic[lef].parent=dic[val]
-        que.append(lef)
-        
-        rig=dic2[val][1]
-        dic[val].right=dic[rig]
-        dic[rig].parent=dic[val]
-        que.append(rig)
+    for child in dic2[parent]:
+        if child in done:
+            None
+        else:
+            dic[parent].child.append(dic[child])
+            dic[child].parent=dic[parent]
+            dic[child].f=dic[parent].f+[dic[child].weight]
+            que.append(child)
+            done.add(child)
+    
     #print(que)
 #pri(dic)
+
+mem={}
 for i in range(q):
     u,v=map(int,input().split())
-    uval=[]
-    vval=[]
     
-    curr=dic[u]
-    while curr.index!=1:
-        uval.append(curr.weight)
-        curr=curr.parent
-    uval.append(curr.weight)
+    if (u,v) in mem:
+        print(mem[(u,v)])
         
-    curr=dic[v]
-    while curr.index!=1:
-        vval.append(curr.weight)
-        curr=curr.parent
-    vval.append(curr.weight)
-    #print(uval,vval)
-    
-    ans=0
-    for i in range(len(uval)):
-        ans+=(uval[i]*vval[i])%(2**32)
-    print(ans%(2**32))
+    else:
+        x=len(dic[u].f)
+        uval=dic[u].f
+        vval=dic[v].f
+        ans=0
+        
+        for i in range(len(uval)):
+            ans+=uval[i]*vval[i]
+            
+        ans=ans%(2**32)
+        mem[(u,v)]=ans
+        print(ans)
